@@ -9,9 +9,13 @@ MUTATION_RATE = 0.001
 GENERATIONS = 2000
 X = 10 # save max and average fitness every X generations
 
-SAVE_INITIAL_POP = True
+CARRY_OVER_MOST_FIT = True
+
+SAVE_INITIAL_POP = False
 READ_INITIAL_POP = False
 SAVE_FINAL_POP = True
+SAVE_MOST_FITS = True
+SHOW_PLOTS = True
 
 def main():
     population = np.ndarray(shape=(POPULATION_SIZE, CHROMOSOME_SIZE), dtype=int)
@@ -53,7 +57,7 @@ def main():
             
         fitness = np.ndarray(shape=(POPULATION_SIZE,), dtype=int)
         for i, raw in enumerate(raw_fitness):
-            fitness[i] = raw ** 2
+            fitness[i] = raw ** 4
             
         most_fit = population[max(range(len(fitness)), key=fitness.__getitem__)].copy()
         mutation_bound = int(1 / MUTATION_RATE)
@@ -116,23 +120,31 @@ def main():
                     population[i * 2][j] = dad[j] if not mutate_first else 1 - dad[j]
                     population[i * 2 + 1][j] = mom[j] if not mutate_second else 1 - mom[j]
                     
-        population[0] = most_fit
-                    
-    plt.plot(range(GENERATIONS // X), max_fitnesses)
-    plt.title("Max Fitness by Generation")
-    plt.xlabel(f"Generation (every {X})")
-    plt.ylabel("Max Fitness")
-    plt.show()
+        if CARRY_OVER_MOST_FIT:
+            population[0] = most_fit
+        
+    if SHOW_PLOTS:
+        plt.plot(range(GENERATIONS // X), max_fitnesses)
+        plt.title("Max Fitness by Generation")
+        plt.xlabel(f"Generation (every {X})")
+        plt.ylabel("Max Fitness")
+        plt.show()
 
-    plt.plot(range(GENERATIONS // X), avg_fitnesses)
-    plt.title("Average Fitness by Generation")
-    plt.ylabel("Average Fitness")
-    plt.show()
+        plt.plot(range(GENERATIONS // X), avg_fitnesses)
+        plt.title("Average Fitness by Generation")
+        plt.ylabel("Average Fitness")
+        plt.show()
 
     if SAVE_FINAL_POP:
         with open("outputpop.txt", "w") as f:
             for i in range(POPULATION_SIZE):
                 f.write("".join(str(x) for x in population[i]) + "\n")
+            f.close()
+            
+    if SAVE_MOST_FITS:
+        with open("mostfits.txt", "w") as f:
+            for i in range(GENERATIONS // X):
+                f.write("".join(str(x) for x in most_fits[i]) + "\n")
             f.close()
             
 if __name__ == "__main__":
